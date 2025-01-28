@@ -1,6 +1,11 @@
-it.only('board has no lists', () => {
+it('board has no lists', () => {
+
+  cy.intercept('GET', '/api/lists?boardId=1')
+    .as('getLists')
 
   cy.visit('/board/1')
+
+  cy.wait('@getLists')
 
   cy.get('[data-cy=list]')
     .should('not.exist')
@@ -8,6 +13,10 @@ it.only('board has no lists', () => {
 });
 
 it('deleting a list', () => {
+  cy.intercept({
+    method: 'DELETE',
+    url: '/api/lists/*'
+  }).as('deleteList')
 
   cy.visit('/board/1')
 
@@ -16,5 +25,10 @@ it('deleting a list', () => {
 
   cy.get('[data-cy="delete-list"]')
     .click()
+
+  cy.wait('@deleteList')
+    .its('response.statusCode')
+    .should('eq', 200)
+    
 
 });
